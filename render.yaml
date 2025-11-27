@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: tp-backend
+    env: php
+    plan: free
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+      php artisan storage:link
+      php artisan migrate --force
+    startCommand: |
+      php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_NAME
+        value: "TP Backend"
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: products-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: products-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: products-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: products-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: products-db
+          property: password
+
+databases:
+  - name: products-db
+    plan: free
+    databaseName: products_db
+    user: products_db_user
