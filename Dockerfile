@@ -2,23 +2,31 @@ FROM php:8.2-apache
 
 WORKDIR /var/www/html
 
-# Installer les dépendances système pour PostgreSQL
+# Installer les dépendances système
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_mysql \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo_pgsql
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo pdo_mysql
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copier d'abord seulement composer.json pour cache Docker
+COPY composer.json composer.lock ./
+
+# Installer les dépendances (cache cette étape)
+RUN composer install --no-dev --no-scripts --no-autoloader
+
 # Copier tout le code
 COPY . .
 
-# Installer les dépendances PHP
-RUN composer install --no-dev --optimize-autoloader
-
-# Configurer les permissions
+# Générer l'autoload et configurer
+RUN composer dump-autoload --optimize
 RUN chmod -R 755 storage bootstrap/cache
 
 EXPOSE 80
