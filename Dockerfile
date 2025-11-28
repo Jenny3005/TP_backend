@@ -2,16 +2,17 @@ FROM php:8.2-apache
 
 WORKDIR /var/www/html
 
-# Installer les dépendances système
+# Installer les dépendances système POUR POSTGRESQL
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip \
-    && docker-php-ext-install pdo pdo_mysql
+    && docker-php-ext-install pdo pdo_pgsql
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
